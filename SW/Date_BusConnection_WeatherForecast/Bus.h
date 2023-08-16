@@ -1,9 +1,8 @@
     // departures in working days
     // {Hour, FirstDepartureInMinutes, SecondDepartureInMinutes, ...}
-    // if no connection in the hour, fill the rest of cell by -1 value
     static int busDepartureWD[][18] = {
-                  {4, 46, -1, -1, -1, -1, -1, -1, -1, -1}, //first hour of departure, first bus in 4:46, no other s fill -1
-                  {5, 6, 23, 38, 50, -1, -1, -1, -1, -1}, // second hour of departures, first bus in 5:06, next 5:23, last in 5:50, rest fill by -1
+                  {4, 46, -1, -1, -1, -1, -1, -1, -1, -1}, //first hour of departure
+                  {5, 6, 23, 38, 50, -1, -1, -1, -1, -1}, 
                   {6, 1, 9, 17, 25, 33, 41, 49, 56, -1}, 
                   {7, 4, 11, 19, 26, 34, 41, 49, 56, -1},
                   {8, 4, 11, 19, 29, 39, 51, -1, -1, -1},

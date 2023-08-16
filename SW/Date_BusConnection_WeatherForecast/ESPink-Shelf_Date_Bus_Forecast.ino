@@ -14,9 +14,9 @@
  *
  *  Used Forecast data from https://github.com/petrbrouzda/YrNoProvider
  *
- *	What customer shall change in config:
- * NTP server, jsonurl, ssid, pass and bus departures (Bus.h file)
- *
+ *	What customer shall change:
+ *  Bus.h -> fill your departure time, working days, saturday and sunday are split
+ *  config.h -> fill your location, Wi-Fi credentials
  */
 
 
@@ -25,6 +25,9 @@
 
 #include <WiFi.h>
 #include <HTTPClient.h>
+
+/*------- CONFIGURATION ----------*/
+#include "config.h"
 
 /*------- Arduino JSON ----------*/
 #include <ArduinoJson.h>
@@ -47,19 +50,10 @@
 GxEPD2_BW<GxEPD2_213_T5D, GxEPD2_213_T5D::HEIGHT> display(GxEPD2_213_T5D(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4)); // GDEW0213T5D 104x212, UC8151D
 
 /*------- NTP ----------*/
-const char* ntpServer = "europe.pool.ntp.org";
-const long  gmtOffset_sec = 3600;
-const int   daylightOffset_sec = 3600;
-
 struct tm timeinfo;
 
 /*------- Arduino JSON config ----------*/
-const char* jsonurl = "https://lovecka.info/YrNoProvider1/yrno/forecast?lat=YOUR_LAT&lon=YOUR_LOG&alt=50&mode=1"; // write your location - lat and log
 StaticJsonDocument<10000> doc;
-
-/*------- Wi-Fi credentials ----------*/
-char ssid[] = "SSID";
-char pass[] = "PASSWORD";
 
 void setup()
 {
@@ -76,7 +70,7 @@ void setup()
     if(count >= 20) // wait max 20s, if it is not connected, go to sleep
     {
       Serial.flush();
-      esp_sleep_enable_timer_wakeup(600 * 1000000); // sleep for 10 minutes
+      esp_sleep_enable_timer_wakeup(sleepDuration * 1000000); // sleep for 10 minutes
       esp_deep_sleep_start(); 
     }
   }
@@ -104,7 +98,7 @@ void setup()
     if(!getLocalTime(&timeinfo))
     {
       Serial.flush();
-      esp_sleep_enable_timer_wakeup(600 * 1000000); 
+      esp_sleep_enable_timer_wakeup(sleepDuration * 1000000); 
       esp_deep_sleep_start();
       Serial.println("Failed to obtain time");
       return;
@@ -130,7 +124,7 @@ void setup()
   }
   
   Serial.flush();
-  esp_sleep_enable_timer_wakeup(600 * 1000000); 
+  esp_sleep_enable_timer_wakeup(sleepDuration * 1000000); 
   esp_deep_sleep_start(); 
 
 }
@@ -161,7 +155,7 @@ void updateBUSconnectionData()
     if((currHour >= firstDepartureHour) && (currHour <= lastDepartureHour))
     {
       Serial.println("Following BUS connection");
-      for(int i = 1; i <= 9; i++) // search BUS between 1 to 9 , means firstMinuteConnection, secondMinuteConnection, ...
+      for(int i = 1; i <= 9; i++) // search BUS between 1 to 9 time slot , means firstConnectionInMinutes, secondConnectionInMinutes, ...
       {
           int minuteConnection = 0;
           
