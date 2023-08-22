@@ -1,7 +1,7 @@
 # LaskaKit ESPink-Shelf-213 ESP32 e-Paper 
 
 Malá, designově povedá vývojová deska, která byla navržena především na co nejnižší spotřebu proudu a pohodlné programování.</br>
-To je ESPink Shelf 213, deska osazené [ePaper o velikosti 2.13"](https://www.laskakit.cz/good-display-gdew0213t5d-2-13--250x122-epaper-displej-grayscale/).</br>
+To je ESPink Shelf 213, deska osazené [ePaper o velikosti 2.13"](https://www.laskakit.cz/good-display-gdey0213b74-2-13--250x122-epaper-displej/).</br>
 
 ![Popis desky](https://github.com/LaskaKit/ESPink-Shelf/blob/main/img/ESP32-Shelf-213_desc.JPG)
 
