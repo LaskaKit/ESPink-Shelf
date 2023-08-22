@@ -1,7 +1,7 @@
 # LaskaKit ESPink-Shelf-213 ESP32 e-Paper 
 
 A small development board that has been designed primarily for lowest power consumption and convenient programming.</br>
-This is the ESPink Shelf 213, a board equipped with [ePaper with 2.13" dimension](https://www.laskakit.cz/good-display-gdew0213t5d-2-13--250x122-epaper-displej-grayscale/).</br>
+This is the ESPink Shelf 213, a board equipped with [ePaper with 2.13" dimension](https://www.laskakit.cz/good-display-gdey0213b74-2-13--250x122-epaper-displej/).</br>
 
 ![Description](https://github.com/LaskaKit/ESPink-Shelf/blob/main/img/ESP32-Shelf-213_desc.JPG)
 
