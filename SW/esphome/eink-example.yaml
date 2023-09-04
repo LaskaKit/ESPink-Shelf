@@ -1,0 +1,106 @@
+esphome:
+  name: eink
+  on_boot:
+    priority: 1000
+    then:
+      - lambda: |-
+          pinMode(2, OUTPUT);
+          digitalWrite(2, HIGH);
+          delay(100);
+
+# https://community.home-assistant.io/t/esphome-esp32-turn-on-output-before-i2c-bus-setup/402980/3
+
+esp32:
+  board: nodemcu-32s
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "PASSWORD"
+
+ota:
+  password: "PASSWORD"
+
+wifi:
+  ssid: "AP NAME"
+  password: "PASSWORD"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "eink Fallback Hotspot"
+    password: "2OLAtal5FkHm"
+
+captive_portal:
+
+sensor:
+  - platform: sht4x
+    temperature:
+      id: temperature
+      name: "Temperature"
+    humidity:
+      id: humidity
+      name: "Relative Humidity"
+
+output:
+  - platform: gpio
+    pin: GPIO2
+    id: gpio_2
+
+time:
+  - platform: homeassistant
+    id: esptime
+
+font:
+  # - file: 'slkscr.ttf'
+  #   id: font1
+  #   size: 8
+
+  - file: 'BebasNeue-Regular.ttf'
+    id: font2
+    size: 48
+
+  - file: 'arial.ttf'
+    id: font3
+    size: 14
+
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+
+spi:
+  clk_pin: GPIO18
+  mosi_pin: GPIO23
+
+
+display:
+  - platform: waveshare_epaper
+    cs_pin: GPIO5
+    dc_pin: GPIO17
+    busy_pin: GPIO4
+    reset_pin: GPIO16
+    model: 2.13in-ttgo-b74
+    full_update_every: 300
+    reset_duration: 2ms
+    update_interval: 10s
+    rotation: 90°
+    lambda: |-
+      ESP_LOGD("main", "display");
+      id(gpio_2).turn_on();
+      // Print "Mitt Smarta Hus" in top center.
+      it.printf(64, 0, id(font3), TextAlign::TOP_CENTER, "hi there");
+
+      // Print time in HH:MM format
+      it.strftime(0, 60, id(font2), TextAlign::BASELINE_LEFT, "%H:%M", id(esptime).now());
+
+      // Print inside temperature (from homeassistant sensor)
+      if (id(temperature).has_state()) {
+        it.printf(127, 23, id(font3), TextAlign::TOP_RIGHT , "%.1f°", id(temperature).state);
+        //it.printf(0, 60, id(font2), TextAlign::BASELINE_LEFT, "%.1f°", id(temperature).state);
+      }
+
+      // Print outside temperature (from homeassistant sensor)
+      if (id(humidity).has_state()) {
+        it.printf(127, 60, id(font3), TextAlign::BASELINE_RIGHT , "%.1f%%", id(humidity).state);
+      }
