@@ -1,0 +1,493 @@
+###################
+#
+# This example code for Temperature and Humidity SHTxx module
+# is used with ESPink Shelf 2.13".
+# ESPink Shelf reads temperature and humidity from SHT40 sensor 
+# and shows on ePaper 2.13"
+#
+# e-paper: GDEY0213B74 250x122
+#
+# I2C
+# DeepSleep
+# HomeAssistant
+# Http Request
+# ENABLE voltage for ePaper and I2C sensor - GPIO2 (HIGH - turn on, LOW - turn off)
+#
+# Made by (c) Lukas Havlas 2024
+# Made by (c) laskakit.cz 2023
+#
+###################
+
+substitutions:
+  board_name: "LaskaKit ESPink-Shelf 2.13"
+  set_deepsleep_duration: "20min"
+  set_deepsleep_run_duration: "1min"
+
+  set_ha_entity_temp_outside:     sensor.solar_sht3_temperature_2            # name of entity for outside temperature
+
+  gpio_display_turn_on: GPIO2                           #zapnuti E-ink
+  gpio_display_clk: GPIO18
+  gpio_display_mosi: GPIO23
+  gpio_display_cs: GPIO5
+  gpio_display_dc: GPIO17
+  gpio_display_busy: GPIO4
+  gpio_display_reset: GPIO16
+
+  gpio_adc_battery_voltage: GPIO34                      #dle PDF Git je GPIO34 zapojena baterie
+  set_battery_voltage_divider_multiply: "2.1"             #na kolik nasobit pro dosazeni pozadovane hodnoty
+
+  gpio_i2c_sda: GPIO21
+  gpio_i2c_scl: GPIO22
+
+  iso8601_lambda: |-
+      char str[21];
+      time_t now = id(time_homeassistant).now().timestamp;
+      strftime(str, sizeof(str), "%Y-%m-%dT%H:%M:%SZ", gmtime(&now));
+      return (std::string) str;
+
+globals:
+  - id: set_active_http
+    type: int
+    restore_value: no
+    initial_value: '0'                            # 0 / 1 zda má být aktivní HTTP request na externí WWW
+  - id: set_active_deepsleep
+    type: int
+    restore_value: no
+    initial_value: '1'                            # 0 / 1 zda má být aktivní deepsleeep
+  - id: cpu_speed
+    type: int
+    restore_value: no
+    initial_value: "0"
+
+  
+
+
+esphome:
+  name: esp32-epaper-temp
+  friendly_name: esp32-epaper-temp
+  #platformio_options:
+    #board_build.f_cpu: 80000000L      #snizenu MHz na 80Mhz misto 240MHz / na cinnost co to ma delat by melo stacit. #Laska ESPink deska na to nereaguje, jine ANO
+#  on_boot:
+   # priority: -100  #-100 ceka se na inicializaci vseho #pokud je priority 1000 HTTP request neprobehne
+ #   then:
+#      - wait_until:
+ #          condition:
+  #           api.connected:
+#      - component.update: wifi_signal_db
+#      - component.update: battery_raw
+ #     - lambda: |-                    #pin 2 řídí napájení E-INK LaskaKit
+  #        pinMode(2, OUTPUT);
+   #       digitalWrite(2, HIGH);
+    #      delay(100);
+ #     - delay: 5s
+#      - script.execute: my_go_to_sleep
+
+
+
+esp32:
+  board: nodemcu-32s
+  #framework:
+   # type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "*******************************"
+
+ota:
+  password: "*********************"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  #on_connect:
+  #  - script.execute: send_data_to_url      #odesleme data na externi stranky v1
+
+  #### co neni potreba nepouzijem
+#  ap:
+ #   ssid: "Esp32-Epaper-Temp"
+  #  password: "WJK4kErgOsds***PD7"
+
+#captive_portal:
+
+i2c:
+  sda: $gpio_i2c_sda
+  scl: $gpio_i2c_scl
+  scan: false # false #uspora baterie default true
+
+spi:
+  clk_pin: $gpio_display_clk
+  mosi_pin: $gpio_display_mosi
+
+deep_sleep:
+  run_duration: ${set_deepsleep_run_duration} 
+  sleep_duration: ${set_deepsleep_duration}
+  id: deep_sleep_1
+
+time:
+  - platform: homeassistant
+    id: time_homeassistant
+
+http_request:
+  useragent: esphome/device/esp32
+  timeout: 3s
+
+
+
+
+
+script:
+  - id: my_data_received
+    then:
+      - component.update: ink_display
+      - script.execute: my_go_to_sleep    
+
+
+  - id: my_send_data_to_url
+    mode: single
+    then:
+      - http_request.send:
+          method: POST
+          url: http://www.********************************************?json=yes
+          headers:
+            Content-Type: application/json
+          verify_ssl: false
+          on_response:
+            then:
+              - logger.log:
+                  format: "HTTP Response status: %d, Duration: %u ms"
+                  args:
+                    - status_code
+                    - duration_ms
+
+          json: |-
+            root["chip_name"] = "${board_name}";
+            root["chip_id"] = "1200666"; 
+            root["wifi_signal"] = id(wifi_signal_db).state;
+            root["chip_mac"] = id(mac_wifi_address).state;
+            root["chip_ip"] = id(ip_address).state;
+            root["value1"] = id(sht4x_temperature).state;
+            root["value2"] = id(sht4x_humidity).state;
+            root["value_name1"] = "Temperature";
+            root["value_name2"] = "Humidity";
+            root["battery_stat"] = id(battery_raw).state;
+            root["battery_text"] = id(battery_level).state;
+
+
+  - id: my_go_to_sleep
+#    mode: single
+    then:
+        - logger.log: "------------GO TO ----------SLEEEEEEEEEEEEEEEEP --- It's daytime, entering short sleep for ${set_deepsleep_duration}"   
+        - delay: 15s
+        - deep_sleep.enter:
+            id: deep_sleep_1 
+            sleep_duration: ${set_deepsleep_duration}
+#      - lambda: |-
+#                        int set_deep = id(set_active_deepsleep);
+ #                       float sensor_temp = id(sht4x_temperature).state;
+#
+ #                       if ( set_deep > 0 && sensor_temp > 5 ) {
+  #                        ESP_LOGD("custom", "----------- DEEPSLEEP START ANO set_deep %i", set_deep);
+   #                       
+    #                    } 
+     #                   else{
+      #                    //ESP_LOGD("custom", "----------- DEEPSLEEP START NE sht4x_temperature %f", sensor_temp);
+       #                   
+        #                }
+
+         
+              #- deep_sleep.enter:
+               #   id: deep_sleep_1
+                #  sleep_duration: $set_deepsleep_time
+#id(deep_sleep_1).set_sleep_duration(600s);
+#or
+ #id(deep_sleep_1).set_sleep_duration(10m);
+
+## nelze pouzit v deepsleeep RAM se vzdy smaze
+#graph:
+ 
+ # - id: graph_temperature
+  #  sensor: sht4x_temperature
+   # duration: 24h
+    #width: 100
+    #height: 100
+
+
+sensor:
+  - platform: wifi_signal
+    name: "wifi signal"
+    id: "wifi_signal_db"
+    unit_of_measurement: "dB"
+    update_interval: 10s 
+#  - platform: template           #zakomentovano na sensor se velice dlouho cekalo
+#    name: "CPU speed"
+#    id: "esp_cpu_speed"
+#    accuracy_decimals: 0
+#    unit_of_measurement: Mhz
+#    entity_category: "diagnostic"
+#    lambda: |-
+#      return (id(cpu_speed));
+
+  - platform: homeassistant
+    internal: true
+    entity_id: $set_ha_entity_temp_outside
+    id: weather_temp_outside
+
+  - platform: sht4x
+    update_interval: 10s #default 60s #nastaveno na nizke cislo aby se co nejdrive nacetla data a co nejdrive se mohlo uspat.
+    temperature:
+      id: "sht4x_temperature"
+      name: "Temperature"
+      on_raw_value:
+        if:
+            condition:
+                - lambda: |- 
+                    int set_http = id(set_active_http);  
+                    float sensor_temp = id(sht4x_temperature).state;
+
+                    if ( set_http > 0 && sensor_temp > 5 ) {
+                      ESP_LOGD("custom", "----------- HTTP request ANO set_http %i", set_http);
+                      ESP_LOGD("custom", "----------- HTTP request ANO sht4x_temperature %f", sensor_temp);
+                      return true;
+                    } 
+                    else{
+                      //ESP_LOGD("custom", "----------- HTTP request NE set_http %i", set_http);
+                      //ESP_LOGD("custom", "----------- HTTP request NE sht4x_temperature %f", sensor_temp);
+                      return false;
+                    }
+                    
+
+                #and:
+                  #- lambda: 'return id(set_active_http).state == "yes";'
+                  #- lambda: 'return id(sht4x_temperature).state > 5;'
+              #sensor.in_range:
+               # id: sht4x_temperature
+                #above: 5
+            then:
+              - script.execute: my_send_data_to_url      #odesleme data na externi stranky
+             ## - delay: 1s
+              ##- script.execute: my_go_to_sleep            #jdem si chrupnout
+              
+
+
+    humidity:
+      id: "sht4x_humidity"
+      name: "Relative Humidity"
+
+    
+  - platform: adc
+    pin: $gpio_adc_battery_voltage                           
+    update_interval: 3s
+    id: "battery_raw"
+    name: "battery_raw"
+    unit_of_measurement: 'V'
+    accuracy_decimals: 2
+    attenuation: 6dB # auto,  0db, 2.5db, 6db, 11db
+    filters:
+      - multiply: $set_battery_voltage_divider_multiply  
+   # filters:
+    #  - median:
+     #     window_size: 5
+      #    send_every: 3
+       #   send_first_at: 1
+  - platform: template
+    unit_of_measurement: '%'
+    update_interval: 3s
+    device_class: battery
+    entity_category: diagnostic
+    name: Baterie
+    id: battery_level    
+    lambda: |-
+      return ( (id(battery_raw).state /4.1) * 100.00);
+
+  - platform: uptime
+    name: Uptime Sensor
+    id: uptime_sensor
+    update_interval: 3s
+    internal: true
+    on_raw_value:
+      then:
+        - text_sensor.template.publish:
+            id: uptime_human
+            state: !lambda |-
+              int seconds = round(id(uptime_sensor).raw_state);
+              int days = seconds / (24 * 3600);
+              seconds = seconds % (24 * 3600);
+              int hours = seconds / 3600;
+              seconds = seconds % 3600;
+              int minutes = seconds /  60;
+              seconds = seconds % 60;
+              return (
+                (days ? String(days) + "d " : "") +
+                (hours ? String(hours) + "h " : "") +
+                (minutes ? String(minutes) + "m " : "") 
+              ).c_str();
+
+    #refresh
+    on_value: # Actions to perform once data for the last sensor has been received
+      then:
+        - script.execute: my_data_received
+
+output:
+  - platform: gpio
+    pin: $gpio_display_turn_on
+    id: gpio_2
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "IP Address"
+      id: "ip_address"
+    ssid:
+      name: "Connected SSID"
+      id: "connected_ssid"
+    bssid:
+      name: "Connected BSSID"
+      id: "connected_bssid"
+    mac_address:
+      name: "Mac Wifi Address"
+      id: "mac_wifi_address"
+
+  - platform: version
+    name: "ESPHome Version"
+    id: "esphome_version"
+    hide_timestamp: True
+
+  - platform: template
+    name: Uptime
+    id: uptime_human
+    icon: mdi:clock-start
+
+  - platform: template
+    name: Board Name
+    id: board_name
+    update_interval: 960s
+    icon: mdi:cpu-32-bit
+    lambda: |-
+      return {"$board_name"};
+  
+
+
+
+
+font:
+  #- file: 'fonts/comic.ttf'
+  - file: 'fonts/impact.ttf'
+    id: font_day
+    size: 60
+  - file: 'fonts/impact.ttf'
+    id: font_h1
+    size: 55
+  - file: 'fonts/impact.ttf'
+    id: font_h2
+    size: 40
+  - file: 'fonts/impact.ttf'
+    id: font_h3
+    size: 32
+  - file: 'fonts/impact.ttf'
+    id: font_h4
+    size: 12
+
+  - file: 'fonts/materialdesignicons-webfont.ttf'
+    id: font_ico
+    size: 25
+    glyphs:
+      - "\U000F0599" # mdiWeatherSunn
+      - "\U000F06A1" # mdi:home-lightning-bolt-outline
+      - "\U000F008E" # baterie 0 nebo empty
+      - "\U000F007A" # baterie 10
+      - "\U000F007B" # baterie 20
+      - "\U000F007C" # baterie 30
+      - "\U000F007D" # baterie 40
+      - "\U000F007E" # baterie 50
+      - "\U000F007F" # baterie 60
+      - "\U000F0080" # baterie 70
+      - "\U000F0081" # baterie 80
+      - "\U000F0082" # baterie 90
+      - "\U000F0079" # baterie 100
+
+  - file: 'fonts/materialdesignicons-webfont.ttf'
+    id: font_ico2
+    size: 28
+    glyphs:
+      - "\U000F0504" # mditemperature-celsius
+      - "\U000F058E" # mdiwater-percent
+      
+
+
+display:
+  - platform: waveshare_epaper
+    id: ink_display
+    cs_pin: $gpio_display_cs
+    dc_pin: $gpio_display_dc
+    busy_pin: $gpio_display_busy
+    reset_pin: $gpio_display_reset
+    model: 2.13in-ttgo-b74
+    full_update_every: 300
+    #reset_duration: 2ms
+    #update_interval: 30s
+    update_interval: never # upadete bude vyvolan pred prechodem do deepsleep
+    rotation: 90°
+    lambda: |-
+      ESP_LOGD("main", "display");
+      id(gpio_2).turn_on();
+      // 250x122px
+
+      //it.graph(0, 0, id(graph_temperature));
+
+      // Print time in HH:MM format
+      //it.strftime(0, 60, id(font_h3), TextAlign::BASELINE_LEFT, "%H:%M", id(time_homeassistant).now());
+    
+      if (id(weather_temp_outside).has_state()) {
+        it.printf(100, -3, id(font_h1), TextAlign::TOP_RIGHT , "%.1f", id(weather_temp_outside).state);
+
+      }
+
+      it.print(110,17, id(font_ico2), "\U000F0504");
+      it.print(112,60, id(font_ico2), "\U000F058E");
+
+      if (id(sht4x_temperature).has_state()) {
+        it.printf(150, -3, id(font_h1), TextAlign::TOP_LEFT , "%.1f", id(sht4x_temperature).state);
+        
+        //it.print(125, 5, id(font_h3), TextAlign::TOP_CENTER , "°");
+        //it.print(125, 15, id(font_h3), TextAlign::TOP_CENTER , "C");
+      }
+
+      if (id(sht4x_humidity).has_state()) {  
+        it.printf(150, 55, id(font_h3), TextAlign::TOP_LEFT , "%.1f%", id(sht4x_humidity).state);
+      }
+
+      //// FOOT
+      it.strftime (0,   109, id(font_h4), "%H:%M", id(time_homeassistant).now()); 
+      it.printf   (35,  109, id(font_h4), "%s", id(ip_address).state.c_str() ); 
+      it.printf   (110, 109, id(font_h4), "(%.0fdb)", id(wifi_signal_db).state ); 
+
+      /////////// BATTERY ///////////
+      it.printf   (230, 109, id(font_h4), "%.0f%%", id(battery_level).state); 
+      /// ICO 
+      if (isnan(id(battery_level).state)) {
+        it.print(228,85, id(font_ico), "\U000F008E");
+      } else if (id(battery_level).state < 10) {
+        it.print(228,85, id(font_ico), "\U000F007A");
+      } else if (id(battery_level).state < 25) {
+        it.print(228,85, id(font_ico), "\U000F007B");
+      } else if (id(battery_level).state < 35) {
+        it.print(228,85, id(font_ico), "\U000F007C");
+      } else if (id(battery_level).state < 45) {
+        it.print(228,85, id(font_ico), "\U000F007D");
+      } else if (id(battery_level).state < 55) {
+        it.print(228,85, id(font_ico), "\U000F007E");
+      } else if (id(battery_level).state < 65) {
+        it.print(228,85, id(font_ico), "\U000F007F");
+      } else if (id(battery_level).state < 75) {
+        it.print(228,85, id(font_ico), "\U000F0080");
+      } else if (id(battery_level).state < 85) {
+        it.print(228,85, id(font_ico), "\U000F0081");
+      } else if (id(battery_level).state < 95) {
+        it.print(228,85, id(font_ico), "\U000F0082");
+      } else if (id(battery_level).state < 101) {
+        it.print(228,85, id(font_ico), "\U000F0079");
+      }
