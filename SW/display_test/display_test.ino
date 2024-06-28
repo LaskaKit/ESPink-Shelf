@@ -15,6 +15,7 @@
 
 #include <GxEPD2_BW.h>
 #include <GxEPD2_3C.h>
+#include <GxEPD2_4C.h>
 #include <GxEPD2_7C.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
 #include "bitmaps/Bitmaps1304x984.h" // 12.48" b/w
@@ -22,9 +23,10 @@
 #define SLEEP_SEC 15         // Measurement interval (seconds)
 
 // select one and a LaskaKit ESPink-Shelf Boards:
-//GxEPD2_BW<GxEPD2_213_T5D, GxEPD2_213_T5D::HEIGHT> display(GxEPD2_213_T5D(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));         // ESPink-Shelf-2.13 GDEW0213T5D -> 2.13" 104x212, UC8151D
 //GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));         // ESPink-Shelf-2.13 GDEM0213B74 -> 2.13" 122x250, SSD1680 
-GxEPD2_BW<GxEPD2_290_GDEY029T94, GxEPD2_290_GDEY029T94::HEIGHT> display(GxEPD2_290_GDEY029T94(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));  // ESPink-Shelf-2.9 GDEY029T94  128x296, SSD1680, (FPC-A005 20.06.15)
+//GxEPD2_BW<GxEPD2_290_GDEY029T94, GxEPD2_290_GDEY029T94::HEIGHT> display(GxEPD2_290_GDEY029T94(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));  // ESPink-Shelf-2.9 GDEY029T94  128x296, SSD1680, (FPC-A005 20.06.15)
+// 4-color e-papers
+GxEPD2_4C<GxEPD2_290c_GDEY029F51H, GxEPD2_290c_GDEY029F51H::HEIGHT> display(GxEPD2_290c_GDEY029F51H(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4)); // GDEY029F51H 168x384, JD79667 (FPC-H004 22.03.24)
 
 // Other boards (comming soon ;-) )
 //GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> display(GxEPD2_420(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));                                   // GDEW042T2 400x300, UC8176 (IL0398)
@@ -133,7 +135,7 @@ void helloWorld()
     display.print(HelloWorld);
   }
   while (display.nextPage());
-  //Serial.println("helloWorld done");
+  Serial.println("helloWorld done");
 }
 
 void helloWorldForDummies()
