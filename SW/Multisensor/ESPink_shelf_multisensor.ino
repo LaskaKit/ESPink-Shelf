@@ -78,9 +78,8 @@ void setup() {
  
   /*------- Battery voltage ----------*/
   float volt = 0.0;
-  /*adc.attach(vBatPin);*/
   // battery voltage measurement
-  volt = (analogReadMilliVolts(ADC) * deviderRatio / 1000);/*(float)(adc.readVoltage() * dividerRatio);*/
+  volt = (analogReadMilliVolts(ADC) * deviderRatio / 1000);
 
   /*------- ePaper init ----------*/
   display.init(); // ePaper init
