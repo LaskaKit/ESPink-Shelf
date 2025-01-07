@@ -1,7 +1,9 @@
-# LaskaKit ESPink-Shelf-213 ESP32 e-Paper 
+# LaskaKit ESPink-Shelf-213 ESP32 e-Paper a ESPink-Shelf-29
 
 Malá, designově povedá vývojová deska, která byla navržena především na co nejnižší spotřebu proudu a pohodlné programování.</br>
-To je ESPink Shelf 213, deska osazené [ePaper o velikosti 2.13"](https://www.laskakit.cz/good-display-gdey0213b74-2-13--250x122-epaper-displej/).</br>
+To je ESPink Shelf 213 a ESPink Shelf 29, deska osazené [ePaper o velikosti 2.13"](https://www.laskakit.cz/good-display-gdey0213b74-2-13--250x122-epaper-displej/) a [ePaper o velikosti 2.9"](https://www.laskakit.cz/laskakit-espink-shelf-2-9-esp32-e-paper/?variantId=14193).</br>
+[LaskaKit ESPink-4.2 ESP32 e-Paper](https://www.laskakit.cz/laskakit-espink-42-esp32-e-paper-pcb-antenna/?variantId=13538) a [LaskaKit ESPink-Shelf-4.26 ESP32 e-Paper](https://www.laskakit.cz/laskakit-espink-4-26-esp32-s3-e-paper/).</br>
+Pokud preferuješ samostatnou desku, pak máme v nabídce [velmi úsporný a univerzální ESPink](https://www.laskakit.cz/laskakit-espink-esp32-e-paper-pcb-antenna/?variantId=12419). Deska je menší a univerzálnější pro připojení jiných ePaper displejů. </br>
 
 ![Popis desky](https://github.com/LaskaKit/ESPink-Shelf/blob/main/img/ESP32-Shelf-213_desc.JPG)
 
@@ -20,8 +22,12 @@ V případě potřeby větší paměti pak máme osazený ještě slot pro micro
 
 Na desce je osazen i dělič napětí, který je připojen na akumulátor a ESP32 může měřit napětí. Na základě napětí pak provést nějakou akci - například upozornit na nízký stav napětí baterie. Dělič je připojen na pin GPIO34.</br>
 
+Deska podporuje populární projekt Živý Obraz, který výrazně zjednodušuje použití ePaper displeje k zobrazení fotografií, (google, outlook, apple) kalendáře, kurzů, hodnot z meteostanic, předpovědi počasí a mnoho dalšího. Není nutné psát kód, stačí nahrát správný typ ePaper a desky skrze webové prostředí a dodržet postup popsaný v [dokumentaci](https://wiki.zivyobraz.eu/).</br>
+Program nahraješ [přes webové prostředí na této stránce](https://zivyobraz.eu/?page=instalace) a stačí zvolit desku <b>LaskaKit ESPink 2.x</b> a typ ePaperu <b>GDEY029F51H, GDEY029T71H, GDEY029T94 nebo GDEY0213B74</b> - podle toho, co sis objednal. </br>
+
 K této desce jsme připravili několik vzorových kódů, které můžeš využít. Nejzajímavější je kód nazvaný "[Date_BusConnection_WeatherForecast](https://github.com/LaskaKit/ESPink-Shelf/tree/main/SW/Date_BusConnection_WeatherForecast)", kde kromě zobrazení aktuálního data je zobrazena i předpověd počasí a následující odjezdy MHD - třeba autobusů nebo tramvají. 
 
 Vývojovou desku najdeš na našem e-shopu https://www.laskakit.cz/laskakit-espink-shelf-213-esp32-e-paper/
+ a https://www.laskakit.cz/laskakit-espink-shelf-2-9-esp32-e-paper/?variantId=14193
 
 ![Autobusy](https://github.com/LaskaKit/ESPink-Shelf/blob/main/SW/Date_BusConnection_WeatherForecast/Date_BusConnection_WeatherForecast.jpg)

@@ -1,7 +1,7 @@
-# LaskaKit ESPink-Shelf-213 ESP32 e-Paper 
+# LaskaKit ESPink-Shelf-213 and ESPink-Shelf-29 ESP32 e-Paper 
 
 A small development board that has been designed primarily for lowest power consumption and convenient programming.</br>
-This is the ESPink Shelf 213, a board equipped with [ePaper with 2.13" dimension](https://www.laskakit.cz/good-display-gdey0213b74-2-13--250x122-epaper-displej/).</br>
+This is the ESPink Shelf 213 and ESPink Shelf 29, a board equipped with [ePaper with 2.13"](https://www.laskakit.cz/good-display-gdey0213b74-2-13--250x122-epaper-displej/) and [ePaper with 2.9"](https://www.laskakit.cz/laskakit-espink-shelf-2-9-esp32-e-paper/?variantId=14193) dimension.</br>
 
 ![Description](https://github.com/LaskaKit/ESPink-Shelf/blob/main/img/ESP32-Shelf-213_desc.JPG)
 
@@ -24,5 +24,6 @@ There is also a voltage divider on the board that is connected to the battery an
 We have prepared some sample codes for you to use with this board. The most interesting is the code called "[Date_BusConnection_WeatherForecast](https://github.com/LaskaKit/ESPink-Shelf/tree/main/SW/Date_BusConnection_WeatherForecast)", where, in addition to displaying the current date, the weather forecast and the next public transport departures - such as buses or trams - are also displayed. 
 
 You can find the development board on our e-shop https://www.laskakit.cz/laskakit-espink-shelf-213-esp32-e-paper/
+and https://www.laskakit.cz/laskakit-espink-shelf-2-9-esp32-e-paper/?variantId=14193
 
 ![Bus](https://github.com/LaskaKit/ESPink-Shelf/blob/main/SW/Date_BusConnection_WeatherForecast/Date_BusConnection_WeatherForecast.jpg)
