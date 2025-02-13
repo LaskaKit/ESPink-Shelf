@@ -15,7 +15,6 @@
 #define ENABLE_GxEPD2_GFX 0
 
 #include <GxEPD2_BW.h>
-#include <GxEPD2_4C.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
 #include "bitmaps/Bitmaps168x384.h" // 2.9"  b/w
 #include "bitmaps/Bitmaps128x296.h" // 2.9"  b/w
@@ -29,9 +28,9 @@
 #define SLEEP_SEC 15         // Measurement interval (seconds)
 // select one and a LaskaKit ESPink-Shelf Boards:
 // Black and white e-papers
-//GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(SS, DC, RST, BUSY));         // ESPink-Shelf-2.13 GDEM0213B74 -> 2.13" 122x250, SSD1680 
+GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(SS, DC, RST, BUSY));         // ESPink-Shelf-2.13 GDEM0213B74 -> 2.13" 122x250, SSD1680 
 //GxEPD2_BW<GxEPD2_290_GDEY029T94, GxEPD2_290_GDEY029T94::HEIGHT> display(GxEPD2_290_GDEY029T94(SS, DC, RST, BUSY));  // ESPink-Shelf-2.9 GDEY029T94  128x296, SSD1680, (FPC-A005 20.06.15)
-GxEPD2_BW<GxEPD2_290_GDEY029T71H, GxEPD2_290_GDEY029T71H::HEIGHT> display(GxEPD2_290_GDEY029T71H(SS, DC, RST, BUSY)); // GDEY029T71H 168x384, SSD1685, (FPC-H004 22.03.24)
+//GxEPD2_BW<GxEPD2_290_GDEY029T71H, GxEPD2_290_GDEY029T71H::HEIGHT> display(GxEPD2_290_GDEY029T71H(SS, DC, RST, BUSY)); // GDEY029T71H 168x384, SSD1685, (FPC-H004 22.03.24)
 
 void setup()
 {
